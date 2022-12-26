@@ -3,7 +3,7 @@ type CollectionItemType<T> = any | T[];
 export class Collection<T> implements Iterable<any>, Iterator<any> {
 
     private currentIndex: number = 0;
-    protected items: CollectionItemType<T>;
+    private items: CollectionItemType<T>;
     private isArray = true;
 
     constructor(items: T[] | any) {
@@ -11,15 +11,15 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         this.items = items;
     }
 
-    private get itemsAsArray():T[] {
+    private get itemsAsArray(): T[] {
         return this.items as T[];
     }
 
-    private get itemsAsObject():any {
+    private get itemsAsObject(): any {
         return this.items as any;
     }
 
-    get length():number {
+    get length(): number {
         return this.isArray ? this.itemsAsArray.length : Object.keys(this.itemsAsObject).length;
     }
 
@@ -68,23 +68,23 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
     }
 
     chunk(size: number): Collection<T[]> {
-        if(this.isArray) {
+        if (this.isArray) {
 
 
-            return collect(this.itemsAsArray.reduce((acc:T[][], val:T, ind:number) => {
+            return collect(this.itemsAsArray.reduce((acc: T[][], val: T, ind: number) => {
                 const subIndex = Math.floor(ind / size);
-                if(acc.length == subIndex) {
+                if (acc.length == subIndex) {
                     acc.push([val]);
-                 } else {
+                } else {
                     acc[subIndex].push(val);
-                 }
-                 return acc;
+                }
+                return acc;
             }, []));
         } else {
             const keys = this.keys().all() as string[];
-            return collect(keys.reduce((acc:any[], key:string, ind:number) => {
+            return collect(keys.reduce((acc: any[], key: string, ind: number) => {
                 const subIndex = Math.floor(ind / size);
-                if(acc.length == subIndex) {
+                if (acc.length == subIndex) {
                     acc.push({
                         [key]: this.itemsAsObject[key],
                     });
@@ -129,7 +129,7 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
             return this.isArray ? this.itemsAsArray.includes(valueOrCallback) : Object.values(this.itemsAsObject).includes(valueOrCallback);
         } else {
             let result = false;
-            this.each((v:any, k) => {
+            this.each((v: any, k) => {
                 if ((valueOrCallback as ((v: any, k: string) => boolean))(v, k)) {
                     result = true;
                     return false;
@@ -140,15 +140,15 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
     }
 
     each(callback: ((value: any, key: string) => boolean | void)) {
-        if(this.isArray) {
-            for(let i = 0; i < this.length; i++) {
+        if (this.isArray) {
+            for (let i = 0; i < this.length; i++) {
                 const result = callback(this.itemsAsArray[i], i + '');
                 if (result === false) {
                     break;
                 }
             }
         } else {
-            for (let key of this.itemsAsObject) {
+            for (let key in this.itemsAsObject) {
                 const result = callback(this.itemsAsObject[key], key);
                 if (result === false) {
                     break;
@@ -157,9 +157,24 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         }
     }
 
-    first(callback?: ((value: any, index: number) => boolean)): any | null {
+    filter(callback?: ((value: T, key: string) => boolean)): Collection<T> {
+        callback = callback ?? Boolean;
+        if (this.isArray) {
+            return collect(this.itemsAsArray.filter((v, i) => callback!(v, i + '')));
+        } else {
+            const resultObject: any = {};
+            this.each((v, k) => {
+                if (callback!(v, k)) {
+                    resultObject[k] = v;
+                }
+            });
+            return collect(resultObject);
+        }
+    }
+
+    first(callback?: ((value: any, key: string) => boolean)): any | null {
         if (callback === undefined) {
-            if(this.isArray) {
+            if (this.isArray) {
                 return this.length > 0 ? this.itemsAsArray[0] : null;
             } else {
                 return this.length > 0 ? this.itemsAsObject[Object.keys(this.itemsAsObject)[0]] : null;
@@ -178,13 +193,13 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
     }
 
     get<V>(key: string, defaultValue?: V) {
-        if(this.isArray) {
+        if (this.isArray) {
             const intKey = parseInt(key);
-            if(intKey < this.length) {
+            if (intKey < this.length) {
                 return this.itemsAsArray[intKey];
             }
         } else {
-            if(typeof this.itemsAsObject[key] != 'undefined') {
+            if (typeof this.itemsAsObject[key] != 'undefined') {
                 return this.itemsAsObject[key];
             }
         }
@@ -197,7 +212,7 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
 
     last(callback?: ((value: any, key: string) => boolean)): any | null {
         if (callback === undefined) {
-            if(this.isArray) {
+            if (this.isArray) {
                 return this.length > 0 ? this.itemsAsArray[this.length - 1] : null;
             } else {
                 const keys = Object.keys(this.itemsAsObject);
@@ -216,7 +231,7 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         return null;
     }
 
-    map<V>(callback: ((value: T, key: string) => V)):Collection<V> {
+    map<V>(callback: ((value: T, key: string) => V)): Collection<V> {
         if (this.isArray) {
             return collect(this.itemsAsArray.map((v, k) => callback(v, k + '')));
         } else {
@@ -226,6 +241,19 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
             });
             return collect(newObj);
         }
+    }
+
+    pluck(valueField: string, keyField?: string) {
+        const result: any[] | any = typeof keyField == 'undefined' ? [] : {};
+        this.each((v, k) => {
+            const record = collect(v);
+            if (Array.isArray(result)) {
+                result.push(record.get(valueField));
+            } else {
+                result[record.get(keyField!)] = record.get(valueField);
+            }
+        });
+        return result;
     }
 
     push(...values: T[]) {
@@ -240,9 +268,9 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
     }
 
     put(key: string, value: any) {
-        if(this.isArray) {
+        if (this.isArray) {
             const intKey = parseInt(key);
-            if(intKey < this.length) {
+            if (intKey < this.length) {
                 this.itemsAsArray[intKey] = value;
             } else {
                 this.itemsAsArray.push(value);
@@ -259,9 +287,9 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         return this.items.get(randomKey);
     }
 
-    reduce<V>(callback: ((previousValue: V, currentValue: any) => V), initialValue: V) {
-        this.values().each((v:T, k:string) => {
-            initialValue = callback(initialValue, v);
+    reduce<V>(callback: ((previousValue: V, value: any, key?: string) => V), initialValue: V) {
+        this.each((v: T, k: string) => {
+            initialValue = callback(initialValue, v, k);
         });
         return initialValue;
     }
@@ -278,15 +306,117 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         return collect(this.isArray ? this.itemsAsArray : Object.values(this.itemsAsObject));
     }
 
+    where(key: string | ((value: T, key: string) => boolean), operator?: any, value?: any) {
+        return this.filter(this.callbackForFilter(key, operator, value));
+    }
+
+    whereBetween(key:string, range:[number, number]) {
+        return this.where(key, 'between', range);
+    }
+
+    whereIn(key:string, items:any[]) {
+        return this.where(key, 'in', items);
+    }
+
+    whereNotBetween(key:string, range:[number, number]) {
+        return this.where(key, 'not_between', range);
+    }
+
+    whereNotIn(key:string, items:any[]) {
+        return this.where(key, 'not_in', items);
+    }
+
+    whereNotNull(key: string) {
+        return this.where(key, '!==', null);
+    }
+
+    whereNull(key: string) {
+        return this.where(key, '===', null);
+    }
+
     private static iterate<T>(arr: T[] | any, callback: ((v: T, k: string) => void)) {
         const indexes = Object.keys(arr);
         for (let index of indexes) {
             callback(arr[index], index);
         }
     }
+
+    private callbackForFilter(key: string | ((value: T, key: string) => boolean), operator?: any, value?: any): ((value: T, key: string) => boolean) {
+        if (typeof key != 'string') {
+            return key;
+        }
+        if (typeof operator == 'undefined' && typeof value == 'undefined') {
+            value = true;
+            operator = '=';
+        }
+        if (typeof value == 'undefined') {
+            value = operator;
+            operator = '=';
+        }
+
+        return (v: any, k: string) => {
+            const retrieved:any = Collection.safeGet(v, key);
+            switch(operator) {
+                default:
+                case '=':
+                case '==':
+                    return retrieved == value;
+                case '!=':
+                case '<>':
+                    return retrieved != value;
+                case '<':
+                    return retrieved < value;
+                case '>':
+                    return retrieved > value;
+                case '<=':
+                    return retrieved <= value;
+                case '>=':
+                    return retrieved >= value;
+                case '===':
+                    return retrieved === value;
+                case '!==':
+                    return retrieved !== value;
+                case 'between':
+                    return value[0] <= retrieved && retrieved <= value[1];
+                case 'not_between':
+                    return retrieved < value[0] || retrieved > value[1];
+                case 'in':
+                    return (value as any[]).includes(retrieved);
+                case 'not_in':
+                    return !(value as any[]).includes(retrieved);
+            }
+        };
+    }
+
+    static safeGet<V>(target: any[] | any, key?: string | string[], defaultValue?: V): V | undefined {
+        if (typeof key == 'undefined') {
+            return target;
+        }
+        key = Array.isArray(key) ? key : key.split('.').filter(Boolean);
+        for (let segment of key) {
+            if (Array.isArray(target)) {
+                const intKey = parseInt(segment);
+                if (isNaN(intKey)) {
+                    return defaultValue;
+                }
+                if (intKey < target.length) {
+                    target = target[intKey];
+                } else {
+                    return defaultValue;
+                }
+            } else {
+                if (typeof target[segment] == 'undefined') {
+                    return defaultValue;
+                } else {
+                    target = target[segment];
+                }
+            }
+        }
+        return target;
+    }
 }
 
-export const collect = <T>(items: T[] | T):Collection<T> => new Collection(items);
+export const collect = <T>(items: T[] | T): Collection<T> => new Collection(items);
 
 export const range = (start: number, end: number) => {
     const from = parseInt(Math.min(start, end) + '');
