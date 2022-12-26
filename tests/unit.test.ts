@@ -1,4 +1,4 @@
-import { collect, range } from "../src/collection";
+import { collect } from "../src/collection";
 
 describe('test collection iterator', () => {
 
@@ -156,6 +156,16 @@ describe('where functions', () => {
         expect(collection.where('price', 100).all()).toEqual([
             {'product': 'Chair', 'price': 100, 'discount': 10},
             {'product': 'Door', 'price': 100, 'discount': null},
+        ]);
+    });
+
+    test('where function with nested key', () => {
+        expect(collect([
+            {'product': 'Desk', 'price': 200, 'author': {name: 'John'}},
+            {'product': 'Chair', 'price': 100, 'author': {name: 'Jane'}},
+            {'product': 'Bookcase', 'price': 150, 'author': {name: 'Jake'}},
+        ]).where('author.name', 'Jane').all()).toEqual([
+            {'product': 'Chair', 'price': 100, 'author': {name: 'Jane'}},
         ]);
     });
 
