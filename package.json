@@ -1,7 +1,7 @@
 {
   "name": "illuminate-collections",
-  "version": "0.9.0",
-  "description": "",
+  "version": "0.9.1",
+  "description": "The Javascript port of Illuminate Collections package.",
   "main": "src/collection.js",
   "directories": {
     "test": "tests"
@@ -9,7 +9,21 @@
   "scripts": {
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": [
+    "collections",
+    "filter",
+    "list",
+    "iterate",
+    "sort",
+    "reduce",
+    "query",
+    "where",
+    "data structures",
+    "observable",
+    "list",
+    "set",
+    "map"
+  ],
   "author": "rashid2538@gmail.com",
   "license": "ISC",
   "devDependencies": {
