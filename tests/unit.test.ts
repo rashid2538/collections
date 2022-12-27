@@ -1,4 +1,4 @@
-import { collect } from "../src/collection";
+import { collect } from "../src/helpers";
 
 describe('test collection iterator', () => {
 
@@ -135,8 +135,8 @@ describe('miscelenous functions', () => {
             { 'product_id': 'prod-200', 'name': 'Chair' },
         ]);
 
-        expect(collection.pluck('name')).toEqual(['Desk', 'Chair']);
-        expect(collection.pluck('name', 'product_id')).toEqual({
+        expect(collection.pluck('name').all()).toEqual(['Desk', 'Chair']);
+        expect(collection.pluck('name', 'product_id').all()).toEqual({
             'prod-100': 'Desk',
             'prod-200': 'Chair',
         });
