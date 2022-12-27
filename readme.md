@@ -5,7 +5,9 @@ The `Collection` class provides a fluent, convenient wrapper for working with ar
 ```javascript
 import { collect } from 'illuminate-collections';
 
-const collection = collect(['taylor', 'abigail']).map((name) => name.toUpperCase());
+const collection = collect(['taylor', 'abigail'])
+                        .map((name) => name.toUpperCase());
+
 console.log(collection.all());
 
 // ['TAYLOR', 'ABIGAIL']

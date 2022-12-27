@@ -139,7 +139,7 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
 
     each(callback: ((value: any, key: string) => boolean | void)) {
         if (this.isArray) {
-            for(let [i, v] of this.itemsAsArray.entries()) {
+            for (let [i, v] of this.itemsAsArray.entries()) {
                 const result = callback(v, i + '');
                 if (result === false) {
                     break;
@@ -202,6 +202,25 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
             }
         }
         return defaultValue;
+    }
+
+    keyBy<V>(key: string | ((value: any, key: string) => string)): Collection<V> {
+        const newObject: any = {};
+        if (typeof key == 'string') {
+            this.each((v, k) => {
+                if (typeof v[key] != 'undefined') {
+                    newObject[v[key]] = v;
+                }
+            });
+        } else {
+            this.each((v, k) => {
+                const strKey = key(v, k);
+                if (typeof strKey == 'string') {
+                    newObject[strKey] = v;
+                }
+            });
+        }
+        return collect(newObject);
     }
 
     keys(): Collection<string> {
@@ -300,6 +319,20 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         }
     }
 
+    value<V>(key: string, defaultValue?: V) {
+        if (this.isArray) {
+            const intKey = parseInt(key);
+            if (intKey < this.length) {
+                return Collection.value(this.itemsAsArray[intKey]);
+            }
+        } else {
+            if (typeof this.itemsAsObject[key] != 'undefined') {
+                return Collection.value(this.itemsAsObject[key]);
+            }
+        }
+        return defaultValue;
+    }
+
     values(): Collection<T> {
         return collect(this.isArray ? this.itemsAsArray : Object.values(this.itemsAsObject));
     }
@@ -308,19 +341,19 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         return this.filter(this.callbackForFilter(key, operator, value));
     }
 
-    whereBetween(key:string, range:[number, number]) {
+    whereBetween(key: string, range: [number, number]) {
         return this.where(key, 'between', range);
     }
 
-    whereIn(key:string, items:any[]) {
+    whereIn(key: string, items: any[]) {
         return this.where(key, 'in', items);
     }
 
-    whereNotBetween(key:string, range:[number, number]) {
+    whereNotBetween(key: string, range: [number, number]) {
         return this.where(key, 'not_between', range);
     }
 
-    whereNotIn(key:string, items:any[]) {
+    whereNotIn(key: string, items: any[]) {
         return this.where(key, 'not_in', items);
     }
 
@@ -353,8 +386,8 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
         }
 
         return (v: any, k: string) => {
-            const retrieved:any = Collection.safeGet(v, key);
-            switch(operator) {
+            const retrieved: any = Collection.safeGet(v, key);
+            switch (operator) {
                 default:
                 case '=':
                 case '==':
@@ -410,7 +443,14 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
                 }
             }
         }
-        return target;
+        return Collection.value(target);
+    }
+
+    static value(val:any, ...args:any[]) {
+        if(val && typeof val.call != 'undefined') {
+            return val(...args);
+        }
+        return val;
     }
 }
 

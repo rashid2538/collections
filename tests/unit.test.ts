@@ -94,6 +94,21 @@ describe('miscelenous functions', () => {
         expect(collect([1, 2, 3, 4]).first((v, i) => (v as number) > 2)).toBe(3);
     });
 
+    test('keyBy function', () => {
+        const collection = collect([
+            {'product_id': 'prod-100', 'name': 'Desk'},
+            {'product_id': 'prod-200', 'name': 'Chair'},
+        ]);
+        expect(collection.keyBy('product_id').all()).toEqual({
+            'prod-100': {product_id: 'prod-100', name: 'Desk'},
+            'prod-200': {product_id: 'prod-200', name: 'Chair'},
+        });
+        expect(collection.keyBy((v, k) => v.product_id.toUpperCase()).all()).toEqual({
+            'PROD-100': {product_id: 'prod-100', name: 'Desk'},
+            'PROD-200': {product_id: 'prod-200', name: 'Chair'},
+        });
+    });
+
     test('keys function', () => {
         expect(collect({
             'prod-100': { 'product_id': 'prod-100', 'name': 'Desk' },
