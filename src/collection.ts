@@ -1,4 +1,4 @@
-import { callbackForFilter, collect, valueOf } from "./helpers";
+import { callbackForFilter, collect, toNumber, valueOf } from "./helpers";
 
 export abstract class Collection<T, V> implements Iterator<V>, Iterable<V> {
 
@@ -209,7 +209,7 @@ export abstract class Collection<T, V> implements Iterator<V>, Iterable<V> {
 
     sum(key?: string | ((item: V) => number)): number {
         if (key === undefined || typeof key === 'string') {
-            return this.reduce((pv: number, cv: V) => pv + (key === undefined ? (cv as number) : ((cv as any)[key] as number)), 0) as number;
+            return this.reduce((pv: number, cv: V) => pv + toNumber(key === undefined ? cv : (cv as any)[key]), 0) as number;
         } else {
             return this.values().map(key).reduce((pv: number, cv: number) => pv + cv, 0);
         }

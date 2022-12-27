@@ -1,8 +1,8 @@
 {
   "name": "illuminate-collections",
-  "version": "0.9.1",
+  "version": "0.9.3",
   "description": "The Javascript port of Illuminate Collections package.",
-  "main": "src/collection.js",
+  "main": "dist/helpers.js",
   "directories": {
     "test": "tests"
   },

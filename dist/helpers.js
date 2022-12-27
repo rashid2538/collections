@@ -1,8 +1,9 @@
-import { ArrayCollection } from "./array_collection"
-import { Collection } from "./collection"
-import { ObjectCollection } from "./object_collection";
-
-export const callbackForFilter = <T>(key: string | ((value: T, key: string) => boolean), operator?: any, value?: any): ((value: T, key: string) => boolean) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.valueOf = exports.toNumber = exports.safeGet = exports.iterate = exports.collect = exports.callbackForFilter = void 0;
+const array_collection_1 = require("./array_collection");
+const object_collection_1 = require("./object_collection");
+const callbackForFilter = (key, operator, value) => {
     if (typeof key != 'string') {
         return key;
     }
@@ -14,9 +15,8 @@ export const callbackForFilter = <T>(key: string | ((value: T, key: string) => b
         value = operator;
         operator = '=';
     }
-
-    return (v: any, k: string) => {
-        const retrieved: any = safeGet(v, key);
+    return (v, k) => {
+        const retrieved = (0, exports.safeGet)(v, key);
         switch (operator) {
             case '!=':
             case '<>':
@@ -38,9 +38,9 @@ export const callbackForFilter = <T>(key: string | ((value: T, key: string) => b
             case 'not_between':
                 return retrieved < value[0] || retrieved > value[1];
             case 'in':
-                return (value as any[]).includes(retrieved);
+                return value.includes(retrieved);
             case 'not_in':
-                return !(value as any[]).includes(retrieved);
+                return !value.includes(retrieved);
             case '=':
             case '==':
             default:
@@ -48,29 +48,31 @@ export const callbackForFilter = <T>(key: string | ((value: T, key: string) => b
         }
     };
 };
-
-export const collect = <T>(item:T|T[]):Collection<T, T|any> => {
-    if(typeof (item as any)[Symbol.iterator] == 'function') {
-        return new ArrayCollection([...(item as Iterable<T>)]);
-    } else if(typeof item == 'object') {
-        return new ObjectCollection(item as T);
-    } else if(typeof item == 'function') {
-        return collect(valueOf(item));
+exports.callbackForFilter = callbackForFilter;
+const collect = (item) => {
+    if (typeof item[Symbol.iterator] == 'function') {
+        return new array_collection_1.ArrayCollection([...item]);
     }
-    return new ArrayCollection([item]);
+    else if (typeof item == 'object') {
+        return new object_collection_1.ObjectCollection(item);
+    }
+    else if (typeof item == 'function') {
+        return (0, exports.collect)((0, exports.valueOf)(item));
+    }
+    return new array_collection_1.ArrayCollection([item]);
 };
-
-export const iterate = <T>(arr: T[] | any, callback: ((v: T, k: string) => void)) => {
-    for(let [i, v] of arr.entries()) {
-        callback(v, i)
+exports.collect = collect;
+const iterate = (arr, callback) => {
+    for (let [i, v] of arr.entries()) {
+        callback(v, i);
     }
     const indexes = Object.keys(arr);
     for (let index of indexes) {
         callback(arr[index], index);
     }
 };
-
-export const safeGet = <V>(target: any[] | any, key?: string | string[], defaultValue?: V): V | undefined => {
+exports.iterate = iterate;
+const safeGet = (target, key, defaultValue) => {
     if (typeof key == 'undefined') {
         return target;
     }
@@ -83,27 +85,31 @@ export const safeGet = <V>(target: any[] | any, key?: string | string[], default
             }
             if (intKey < target.length) {
                 target = target[intKey];
-            } else {
+            }
+            else {
                 return defaultValue;
             }
-        } else {
+        }
+        else {
             if (typeof target[segment] == 'undefined') {
                 return defaultValue;
-            } else {
+            }
+            else {
                 target = target[segment];
             }
         }
     }
-    return valueOf(target);
+    return (0, exports.valueOf)(target);
 };
-
-export const toNumber = (val:any):number => {
+exports.safeGet = safeGet;
+const toNumber = (val) => {
     return parseFloat(val + '');
 };
-
-export const valueOf = (val: any, ...args: any[]) => {
+exports.toNumber = toNumber;
+const valueOf = (val, ...args) => {
     if (val && typeof val.call != 'undefined') {
         return val(...args);
     }
     return val;
 };
+exports.valueOf = valueOf;
