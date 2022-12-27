@@ -44,7 +44,7 @@ describe('sum functions', () => {
     });
 });
 
-describe('test miscelenous functions', () => {
+describe('miscelenous functions', () => {
     test('chunk function', () => {
         expect(collect([1, 2, 3, 4, 5, 6, 7]).chunk(4).all()).toEqual([[1, 2, 3, 4], [5, 6, 7]]);
 
@@ -107,6 +107,10 @@ describe('test miscelenous functions', () => {
 
     test('last element with callback', () => {
         expect(collect([1, 2, 3, 4]).last((v, i) => v < 3)).toBe(2);
+    });
+
+    test('map function', () => {
+        expect(collect([1, 2, 3, 4]).map((v, k) => v * v).all()).toEqual([1, 4, 9, 16]);
     });
 
     test('pluck function', () => {

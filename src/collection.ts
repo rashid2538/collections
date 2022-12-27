@@ -69,8 +69,6 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
 
     chunk(size: number): Collection<T[]> {
         if (this.isArray) {
-
-
             return collect(this.itemsAsArray.reduce((acc: T[][], val: T, ind: number) => {
                 const subIndex = Math.floor(ind / size);
                 if (acc.length == subIndex) {
@@ -141,15 +139,15 @@ export class Collection<T> implements Iterable<any>, Iterator<any> {
 
     each(callback: ((value: any, key: string) => boolean | void)) {
         if (this.isArray) {
-            for (let i = 0; i < this.length; i++) {
-                const result = callback(this.itemsAsArray[i], i + '');
+            for(let [i, v] of this.itemsAsArray.entries()) {
+                const result = callback(v, i + '');
                 if (result === false) {
                     break;
                 }
             }
         } else {
-            for (let key in this.itemsAsObject) {
-                const result = callback(this.itemsAsObject[key], key);
+            for (let [key, value] of Object.entries(this.itemsAsObject)) {
+                const result = callback(value, key);
                 if (result === false) {
                     break;
                 }
