@@ -49,19 +49,19 @@ export const callbackForFilter = <T>(key: string | ((value: T, key: string) => b
     };
 };
 
-export const collect = <T>(item:T|T[]):Collection<T, T|any> => {
-    if(typeof (item as any)[Symbol.iterator] == 'function') {
+export const collect = <T>(item: T | T[]): Collection<T, T | any> => {
+    if (typeof (item as any)[Symbol.iterator] == 'function') {
         return new ArrayCollection([...(item as Iterable<T>)]);
-    } else if(typeof item == 'object') {
+    } else if (typeof item == 'object') {
         return new ObjectCollection(item as T);
-    } else if(typeof item == 'function') {
+    } else if (typeof item == 'function') {
         return collect(valueOf(item));
     }
     return new ArrayCollection([item]);
 };
 
 export const iterate = <T>(arr: T[] | any, callback: ((v: T, k: string) => void)) => {
-    for(let [i, v] of arr.entries()) {
+    for (let [i, v] of arr.entries()) {
         callback(v, i)
     }
     const indexes = Object.keys(arr);
@@ -97,11 +97,11 @@ export const safeGet = <V>(target: any[] | any, key?: string | string[], default
     return valueOf(target);
 };
 
-export const toNumber = (val:any):number => {
+export const toNumber = (val: any): number => {
     return parseFloat(val + '');
 };
 
-export const valueOf = (val: any, ...args: any[]) => {
+export const valueOf = (val: any, ...args: any[]): any => {
     if (val && typeof val.call != 'undefined') {
         return val(...args);
     }

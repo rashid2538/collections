@@ -1,12 +1,15 @@
 {
   "name": "illuminate-collections",
-  "version": "0.9.3",
+  "version": "0.9.5",
   "description": "The Javascript port of Illuminate Collections package.",
   "main": "dist/helpers.js",
+  "types": "index.d.ts",
   "directories": {
     "test": "tests"
   },
   "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
     "test": "jest"
   },
   "keywords": [
