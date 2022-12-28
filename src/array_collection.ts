@@ -49,6 +49,10 @@ export class ArrayCollection<T> extends Collection<T, T> {
         return this;
     }
 
+    skip(count:number):Collection<T, T> {
+        return collect(this.items.slice(count));
+    }
+
     value<R>(key: string, defaultValue?: R) {
         const intKey = parseInt(key);
         if (intKey < this.length) {

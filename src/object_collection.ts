@@ -53,6 +53,17 @@ export class ObjectCollection<T> extends Collection<T, any> {
         return this;
     }
 
+    skip(count:number):Collection<T, any> {
+        let index = 1;
+        const newObj:any = {};
+        this.each((v, k) => {
+            if(index++ > count) {
+                newObj[k] = v;
+            }
+        });
+        return collect(newObj);
+    }
+
     value<R>(key: string, defaultValue?: R) {
         const items = this.items as any;
         if (typeof items[key] != 'undefined') {

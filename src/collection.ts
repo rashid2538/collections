@@ -1,8 +1,6 @@
 import { callbackForFilter, collect, toNumber, valueOf } from "./helpers";
 
-export abstract class Collection<T, V> implements Iterator<V>, Iterable<V> {
-
-    protected index: number = 0;
+export abstract class Collection<T, V> implements Iterable<V> {
 
     abstract all(): T | T[];
     abstract chunk(size: number): Collection<V[], V[]>;
@@ -10,23 +8,24 @@ export abstract class Collection<T, V> implements Iterator<V>, Iterable<V> {
     abstract map<R>(callback: ((value: V, key: string) => R)): Collection<R, R>;
     abstract push(...values: V[]): Collection<T, V>;
     abstract put(key: string, value: any): Collection<T, V>;
+    abstract skip(count:number): Collection<T, V>;
     abstract value<R>(key: string, defaultValue?: R): R;
 
     get length(): number {
         return this.count();
     }
 
-    [Symbol.iterator](): Iterator<V, any, undefined> {
-        this.index = 0;
-        return this;
-    }
-
-    next(): IteratorResult<V> {
+    [Symbol.iterator](): Iterator<V> {
+        let index = 0;
         const items = this.values().all() as V[];
-        return this.index < items.length ? {
-            done: this.index == items.length - 1,
-            value: items[this.index++],
-        } : { done: true, value: null };
+        return {
+            next() {
+                return index < items.length ? {
+                    done: index > items.length,
+                    value: items[index++],
+                } : { done: true, value: null };
+            }
+        };
     }
 
     average(key?: string): number {

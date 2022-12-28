@@ -160,6 +160,10 @@ describe('miscelenous functions', () => {
     test('reduce function', () => {
         expect(collect([1, 2, 3]).reduce((pv, v) => pv + v, 0)).toBe(6);
     });
+
+    test('skip function', () => {
+        expect(collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).skip(4).all()).toEqual([5, 6, 7, 8, 9, 10]);
+    });
 });
 
 describe('where functions', () => {

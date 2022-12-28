@@ -2,6 +2,13 @@ import { ArrayCollection } from "./array_collection"
 import { Collection } from "./collection"
 import { ObjectCollection } from "./object_collection";
 
+/**
+ * Creates a callback for the filter function depending upon the arguments.
+ * @param key Key to look for the filter.
+ * @param operator Operator to be used during filteration.
+ * @param value Value against which the comparison will take place. If omitted then operator will be `=` and value will be used from previous argument.
+ * @returns `(value: T, key: string) => boolean`
+ */
 export const callbackForFilter = <T>(key: string | ((value: T, key: string) => boolean), operator?: any, value?: any): ((value: T, key: string) => boolean) => {
     if (typeof key != 'string') {
         return key;
@@ -49,7 +56,12 @@ export const callbackForFilter = <T>(key: string | ((value: T, key: string) => b
     };
 };
 
-export const collect = <T>(item: T | T[]): Collection<T, T | any> => {
+/**
+ * Create a new collection based on the iterable, array or object passed.
+ * @param item An array or object to be collected.
+ * @returns `Collection<T, T | any>
+ */
+export const collect = <T>(item: T[] | T): Collection<T, T | any> => {
     if (typeof (item as any)[Symbol.iterator] == 'function') {
         return new ArrayCollection([...(item as Iterable<T>)]);
     } else if (typeof item == 'object') {
@@ -60,7 +72,19 @@ export const collect = <T>(item: T | T[]): Collection<T, T | any> => {
     return new ArrayCollection([item]);
 };
 
-export const iterate = <T>(arr: T[] | any, callback: ((v: T, k: string) => void)) => {
+/**
+ * Creates a callback for the equality check for a value.
+ * @param value Value to be checked for equality.
+ * @returns `(item: T) => boolean`
+ */
+export const equality = <T>(value:T) => (item:T) => item === value;
+
+/**
+ * Iterates an array via a callback.
+ * @param arr Array to iterate.
+ * @param callback Callback to be used for the iteration.
+ */
+export const iterate = <T>(arr: T[] | any, callback: ((v: T, k: string) => void)): void => {
     for (let [i, v] of arr.entries()) {
         callback(v, i)
     }
@@ -70,6 +94,36 @@ export const iterate = <T>(arr: T[] | any, callback: ((v: T, k: string) => void)
     }
 };
 
+/**
+ * Creates a negating callback for the callback passed.
+ * @param callback Callback to be negated.
+ * @returns (...params: any[]) => boolean
+ */
+export const negate = (callback:(...args:any[]) => boolean) => (...params:any[]) => !callback(...params);
+
+/**
+ * Creates a collection with integers from `start` to `end`.
+ * @param start Number to start from.
+ * @param end Number to end at.
+ * @returns Collection<number, number>
+ */
+export const range = (start: number, end: number):Collection<number, number> => {
+    const from = Math.round(Math.min(start, end));
+    const to = Math.round(Math.max(start, end));
+    const items = [];
+    for (let i = from; i <= to; i++) {
+        items.push(i);
+    }
+    return collect(items);
+}
+
+/**
+ * Returns the value from the array or object based on the key.
+ * @param target Value to be retrieved from.
+ * @param key Key to look up in the target.
+ * @param defaultValue Default value in case key was not found.
+ * @returns any
+ */
 export const safeGet = <V>(target: any[] | any, key?: string | string[], defaultValue?: V): V | undefined => {
     if (typeof key == 'undefined') {
         return target;
@@ -97,10 +151,21 @@ export const safeGet = <V>(target: any[] | any, key?: string | string[], default
     return valueOf(target);
 };
 
+/**
+ * Converts the passed value to a number (can return a NaN).
+ * @param val Value to convert to a number.
+ * @returns number
+ */
 export const toNumber = (val: any): number => {
     return parseFloat(val + '');
 };
 
+/**
+ * Parses the value of the item passed.
+ * @param val Value to be evaluated.
+ * @param args Arguments to be passed to the callback.
+ * @returns any
+ */
 export const valueOf = (val: any, ...args: any[]): any => {
     if (val && typeof val.call != 'undefined') {
         return val(...args);
