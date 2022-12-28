@@ -20,8 +20,6 @@ console.log(collection.all());
 
 ## Installation
 
-
-
 ```bash
 npm install illuminate-collections
 ```
@@ -30,9 +28,34 @@ npm install illuminate-collections
 
 This project is freely distributable under the terms of the [MIT license][license-url].
 
+## Creating Collections
+
+As mentioned above, the `collect` helper returns a new `Collection` instance for the given array or object. So, creating a collection is as simple as:
+
+```javascript
+import { collect } from 'illuminate-collections';
+
+const collection = collect([1, 2, 3]);
+```
+
 ## Available Methods
 
 For the majority of the remaining collection documentation, we'll discuss each method available on the `Collection` class. Remember, all of these methods may be chained to fluently manipulate the underlying array. Furthermore, almost every method returns a new `Collection` instance, allowing you to preserve the original copy of the collection when necessary:
+
+| ------------------- | ------------------------- | --------------------- |
+| [all](#all)         | [chunk](#chunk)           | [collect](#collect)   |
+| [average](#average) | [chunkWhile](#chunkWhile) | [combine](#combine)   |
+| [avg](#avg)         | [collapse](#collapse)     | [contains](#contains) |
+
+### all
+
+The `all` method returns the underlying array represented by the collection:
+
+```javascript
+collect([1, 2, 3]).all();
+
+// [1, 2, 3]
+```
 
 [![FOSSA Status][fossa-large-image]][fossa-large-url]
 
