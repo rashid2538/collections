@@ -46,6 +46,16 @@ class ObjectCollection extends collection_1.Collection {
         this.items[key] = value;
         return this;
     }
+    skip(count) {
+        let index = 1;
+        const newObj = {};
+        this.each((v, k) => {
+            if (index++ > count) {
+                newObj[k] = v;
+            }
+        });
+        return (0, helpers_1.collect)(newObj);
+    }
     value(key, defaultValue) {
         const items = this.items;
         if (typeof items[key] != 'undefined') {

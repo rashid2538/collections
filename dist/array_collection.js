@@ -43,6 +43,9 @@ class ArrayCollection extends collection_1.Collection {
         }
         return this;
     }
+    skip(count) {
+        return (0, helpers_1.collect)(this.items.slice(count));
+    }
     value(key, defaultValue) {
         const intKey = parseInt(key);
         if (intKey < this.length) {

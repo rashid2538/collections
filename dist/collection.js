@@ -3,22 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Collection = void 0;
 const helpers_1 = require("./helpers");
 class Collection {
-    constructor() {
-        this.index = 0;
-    }
     get length() {
         return this.count();
     }
     [Symbol.iterator]() {
-        this.index = 0;
-        return this;
-    }
-    next() {
+        let index = 0;
         const items = this.values().all();
-        return this.index < items.length ? {
-            done: this.index == items.length - 1,
-            value: items[this.index++],
-        } : { done: true, value: null };
+        return {
+            next() {
+                return index < items.length ? {
+                    done: index > items.length,
+                    value: items[index++],
+                } : { done: true, value: null };
+            }
+        };
     }
     average(key) {
         return this.avg(key);

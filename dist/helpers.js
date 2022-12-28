@@ -1,8 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.valueOf = exports.toNumber = exports.safeGet = exports.iterate = exports.collect = exports.callbackForFilter = void 0;
+exports.valueOf = exports.toNumber = exports.safeGet = exports.range = exports.negate = exports.iterate = exports.equality = exports.collect = exports.callbackForFilter = void 0;
 const array_collection_1 = require("./array_collection");
 const object_collection_1 = require("./object_collection");
+/**
+ * Creates a callback for the filter function depending upon the arguments.
+ * @param key Key to look for the filter.
+ * @param operator Operator to be used during filteration.
+ * @param value Value against which the comparison will take place. If omitted then operator will be `=` and value will be used from previous argument.
+ * @returns `(value: T, key: string) => boolean`
+ */
 const callbackForFilter = (key, operator, value) => {
     if (typeof key != 'string') {
         return key;
@@ -49,6 +56,11 @@ const callbackForFilter = (key, operator, value) => {
     };
 };
 exports.callbackForFilter = callbackForFilter;
+/**
+ * Create a new collection based on the iterable, array or object passed.
+ * @param item An array or object to be collected.
+ * @returns `Collection<T, T | any>
+ */
 const collect = (item) => {
     if (typeof item[Symbol.iterator] == 'function') {
         return new array_collection_1.ArrayCollection([...item]);
@@ -62,6 +74,18 @@ const collect = (item) => {
     return new array_collection_1.ArrayCollection([item]);
 };
 exports.collect = collect;
+/**
+ * Creates a callback for the equality check for a value.
+ * @param value Value to be checked for equality.
+ * @returns `(item: T) => boolean`
+ */
+const equality = (value) => (item) => item === value;
+exports.equality = equality;
+/**
+ * Iterates an array via a callback.
+ * @param arr Array to iterate.
+ * @param callback Callback to be used for the iteration.
+ */
 const iterate = (arr, callback) => {
     for (let [i, v] of arr.entries()) {
         callback(v, i);
@@ -72,6 +96,36 @@ const iterate = (arr, callback) => {
     }
 };
 exports.iterate = iterate;
+/**
+ * Creates a negating callback for the callback passed.
+ * @param callback Callback to be negated.
+ * @returns (...params: any[]) => boolean
+ */
+const negate = (callback) => (...params) => !callback(...params);
+exports.negate = negate;
+/**
+ * Creates a collection with integers from `start` to `end`.
+ * @param start Number to start from.
+ * @param end Number to end at.
+ * @returns Collection<number, number>
+ */
+const range = (start, end) => {
+    const from = Math.round(Math.min(start, end));
+    const to = Math.round(Math.max(start, end));
+    const items = [];
+    for (let i = from; i <= to; i++) {
+        items.push(i);
+    }
+    return (0, exports.collect)(items);
+};
+exports.range = range;
+/**
+ * Returns the value from the array or object based on the key.
+ * @param target Value to be retrieved from.
+ * @param key Key to look up in the target.
+ * @param defaultValue Default value in case key was not found.
+ * @returns any
+ */
 const safeGet = (target, key, defaultValue) => {
     if (typeof key == 'undefined') {
         return target;
@@ -102,10 +156,21 @@ const safeGet = (target, key, defaultValue) => {
     return (0, exports.valueOf)(target);
 };
 exports.safeGet = safeGet;
+/**
+ * Converts the passed value to a number (can return a NaN).
+ * @param val Value to convert to a number.
+ * @returns number
+ */
 const toNumber = (val) => {
     return parseFloat(val + '');
 };
 exports.toNumber = toNumber;
+/**
+ * Parses the value of the item passed.
+ * @param val Value to be evaluated.
+ * @param args Arguments to be passed to the callback.
+ * @returns any
+ */
 const valueOf = (val, ...args) => {
     if (val && typeof val.call != 'undefined') {
         return val(...args);
