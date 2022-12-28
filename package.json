@@ -27,8 +27,16 @@
     "set",
     "map"
   ],
-  "author": "rashid2538@gmail.com",
-  "license": "ISC",
+  "homepage": "https://github.com/rashid2538/collections",
+  "author": "Rashid Mohamad <rashid2538@gmail.com> (https://github.com/rashid2538)",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/rashid2538/collections.git"
+  },
+  "bugs": {
+      "url": "https://github.com/rashid2538/collections/issues"
+  },
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.2.4",
     "jest": "^29.3.1",
