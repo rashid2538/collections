@@ -1,4 +1,4 @@
-import { callbackForFilter, collect, toNumber, valueOf } from "./helpers";
+import { callbackForFilter, collect, compared, safeGet, toNumber, valueOf } from "./helpers";
 
 export abstract class Collection<T, V> implements Iterable<V> {
 
@@ -8,8 +8,9 @@ export abstract class Collection<T, V> implements Iterable<V> {
     abstract map<R>(callback: ((value: V, key: string) => R)): Collection<R, R>;
     abstract push(...values: V[]): Collection<T, V>;
     abstract put(key: string, value: any): Collection<T, V>;
-    abstract skip(count:number): Collection<T, V>;
-    abstract value<R>(key: string, defaultValue?: R): R;
+    abstract slice(offset: number, length?: number): Collection<T, V>;
+    abstract sort(compare?: (a: V, b: V) => number, descending?: boolean): Collection<T, V>;
+    abstract sortBy(key: string | ((item: T) => number) | [string, undefined | 'asc' | 'desc'][], descending?: boolean): Collection<T, V>;
 
     get length(): number {
         return this.count();
@@ -206,6 +207,22 @@ export abstract class Collection<T, V> implements Iterable<V> {
         return initialValue;
     }
 
+    skip(count: number): Collection<T, V> {
+        return this.slice(count);
+    }
+
+    some(valueOrCallback: V | ((v: any, k: string) => boolean)): boolean {
+        return this.contains(valueOrCallback);
+    }
+
+    sortByDesc(key: string) {
+        return this.sortBy(key, true);
+    }
+
+    sortDesc(compare?: (a: V, b: V) => number) {
+        return this.sort(compare, true);
+    }
+
     sum(key?: string | ((item: V) => number)): number {
         if (key === undefined || typeof key === 'string') {
             return this.reduce((pv: number, cv: V) => pv + toNumber(key === undefined ? cv : (cv as any)[key]), 0) as number;
@@ -214,8 +231,33 @@ export abstract class Collection<T, V> implements Iterable<V> {
         }
     }
 
+    take(limit: number): Collection<T, V> {
+        if (limit < 0) {
+            return this.slice(this.length + limit);
+        }
+        return this.slice(0, limit);
+    }
+
+    value<R>(key: string, defaultValue?: R): R | undefined {
+        const firstItem = this.first();
+        return valueOf(firstItem ? collect(firstItem).get(key) : valueOf(defaultValue));
+    }
+
     values(): Collection<V, V> {
         return collect(this.entries().map((v) => v[1]));
+    }
+
+    when(condition: boolean, doThis: (collection: Collection<T, V>) => any, otherwiseDoThis?: (collection: Collection<T, V>) => any) {
+        condition ? doThis(this) : (otherwiseDoThis ? otherwiseDoThis(this) : void (0));
+        return this;
+    }
+
+    whenEmpty(doThis: (collection: Collection<T, V>) => any, otherwiseDoThis?: (collection: Collection<T, V>) => any) {
+        return this.when(this.length == 0, doThis, otherwiseDoThis);
+    }
+
+    whenNotEmpty(doThis: (collection: Collection<T, V>) => any, otherwiseDoThis?: (collection: Collection<T, V>) => any) {
+        return this.when(this.length > 0, doThis, otherwiseDoThis);
     }
 
     where(key: string | ((value: V, key: string) => boolean), operator?: any, value?: any) {

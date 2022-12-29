@@ -43,15 +43,34 @@ class ArrayCollection extends collection_1.Collection {
         }
         return this;
     }
-    skip(count) {
-        return (0, helpers_1.collect)(this.items.slice(count));
+    slice(offset, length) {
+        return (0, helpers_1.collect)(this.items.slice(offset, length ? length + offset : undefined));
     }
-    value(key, defaultValue) {
-        const intKey = parseInt(key);
-        if (intKey < this.length) {
-            return (0, helpers_1.valueOf)(this.items[intKey]);
+    sort(compare, descending) {
+        return (0, helpers_1.collect)([...this.items].sort(compare ? compare : (a, b) => (0, helpers_1.compared)(a, b, descending !== null && descending !== void 0 ? descending : false)));
+    }
+    sortBy(key, descending) {
+        if (typeof key == 'string') {
+            return this.sort((a, b) => {
+                return (0, helpers_1.compared)((0, helpers_1.safeGet)(a, key), (0, helpers_1.safeGet)(b, key), descending);
+            });
         }
-        return (0, helpers_1.valueOf)(defaultValue);
+        else if (Array.isArray(key)) {
+            return this.sort((a, b) => {
+                for (let item of key) {
+                    const compareResult = (0, helpers_1.compared)((0, helpers_1.safeGet)(a, item[0]), (0, helpers_1.safeGet)(b, item[0]), item[1] === 'desc');
+                    if (compareResult != 0) {
+                        return compareResult;
+                    }
+                }
+                return 0;
+            });
+        }
+        else {
+            return (0, helpers_1.collect)([...this.items].sort((a, b) => {
+                return descending ? key(b) - key(a) : key(a) - key(b);
+            }));
+        }
     }
 }
 exports.ArrayCollection = ArrayCollection;

@@ -1,5 +1,5 @@
 import { Collection } from "./collection";
-import { collect, valueOf } from "./helpers";
+import { collect, compared, safeGet, valueOf } from "./helpers";
 
 export class ArrayCollection<T> extends Collection<T, T> {
 
@@ -49,15 +49,33 @@ export class ArrayCollection<T> extends Collection<T, T> {
         return this;
     }
 
-    skip(count:number):Collection<T, T> {
-        return collect(this.items.slice(count));
+    slice(offset: number, length?: number) {
+        return collect(this.items.slice(offset, length ? length + offset : undefined));
     }
 
-    value<R>(key: string, defaultValue?: R) {
-        const intKey = parseInt(key);
-        if (intKey < this.length) {
-            return valueOf(this.items[intKey]);
+    sort(compare?: (a: T, b: T) => number, descending?: boolean): Collection<T, T> {
+        return collect([...this.items].sort(compare ? compare : (a, b) => compared(a, b, descending ?? false)));
+    }
+
+    sortBy(key: string | ((item: T) => number) | [string, undefined | 'asc' | 'desc'][], descending?: boolean) {
+        if (typeof key == 'string') {
+            return this.sort((a: T, b: T) => {
+                return compared(safeGet(a, key), safeGet(b, key), descending);
+            });
+        } else if(Array.isArray(key)) {
+            return this.sort((a: T, b: T) => {
+                for(let item of key) {
+                    const compareResult = compared(safeGet(a, item[0]), safeGet(b, item[0]), item[1] === 'desc');
+                    if(compareResult != 0) {
+                        return compareResult;
+                    }
+                }
+                return 0;
+            });
+        } else {
+            return collect([...this.items].sort((a, b) => {
+                return descending ? key(b) - key(a) : key(a) - key(b);
+            }))
         }
-        return valueOf(defaultValue);
     }
 }

@@ -46,22 +46,56 @@ class ObjectCollection extends collection_1.Collection {
         this.items[key] = value;
         return this;
     }
-    skip(count) {
-        let index = 1;
+    slice(offset, length) {
+        let index = 0;
         const newObj = {};
         this.each((v, k) => {
-            if (index++ > count) {
-                newObj[k] = v;
+            if (index >= offset) {
+                if (length) {
+                    if (index <= (offset + length)) {
+                        newObj[k] = v;
+                    }
+                }
+                else {
+                    newObj[k] = v;
+                }
             }
         });
         return (0, helpers_1.collect)(newObj);
     }
-    value(key, defaultValue) {
-        const items = this.items;
-        if (typeof items[key] != 'undefined') {
-            return (0, helpers_1.valueOf)(items[key]);
+    sort(compare, descending = false) {
+        const entries = this.entries();
+        entries.sort((a, b) => {
+            if (compare) {
+                return compare(a[1], b[1]);
+            }
+            return (0, helpers_1.compared)(a[1], b[1], descending);
+        });
+        return (0, helpers_1.collect)((0, helpers_1.entriesToObject)(entries));
+    }
+    sortBy(key, descending = false) {
+        const entries = this.entries();
+        if (Array.isArray(key)) {
+            entries.sort((a, b) => {
+                for (let item of key) {
+                    const compareResult = (0, helpers_1.compared)((0, helpers_1.safeGet)(a[1], item[0]), (0, helpers_1.safeGet)(b[1], item[0]), item[1] === 'desc');
+                    if (compareResult != 0) {
+                        return compareResult;
+                    }
+                }
+                return 0;
+            });
         }
-        return (0, helpers_1.valueOf)(defaultValue);
+        else {
+            entries.sort((a, b) => {
+                return typeof key == 'string' ?
+                    (0, helpers_1.compared)((0, helpers_1.safeGet)(a[1], key), (0, helpers_1.safeGet)(b[1], key), descending) :
+                    (descending ?
+                        key(b[1]) - key(a[1]) :
+                        key(a[1]) - key(b[1]));
+            });
+        }
+        return (0, helpers_1.collect)((0, helpers_1.entriesToObject)(entries));
     }
 }
 exports.ObjectCollection = ObjectCollection;

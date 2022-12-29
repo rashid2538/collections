@@ -1,5 +1,5 @@
 import { Collection } from "./collection";
-import { collect, iterate, valueOf } from "./helpers";
+import { collect, compared, entriesToObject, iterate, safeGet, valueOf } from "./helpers";
 
 export class ObjectCollection<T> extends Collection<T, any> {
 
@@ -53,22 +53,55 @@ export class ObjectCollection<T> extends Collection<T, any> {
         return this;
     }
 
-    skip(count:number):Collection<T, any> {
-        let index = 1;
-        const newObj:any = {};
+    slice(offset: number, length?: number) {
+        let index = 0;
+        const newObj: any = {};
         this.each((v, k) => {
-            if(index++ > count) {
-                newObj[k] = v;
+            if (index >= offset) {
+                if (length) {
+                    if (index <= (offset + length)) {
+                        newObj[k] = v;
+                    }
+                } else {
+                    newObj[k] = v;
+                }
             }
         });
         return collect(newObj);
     }
 
-    value<R>(key: string, defaultValue?: R) {
-        const items = this.items as any;
-        if (typeof items[key] != 'undefined') {
-            return valueOf(items[key]);
+    sort(compare?: (a: any, b: any) => number, descending: boolean = false): Collection<T, any> {
+        const entries = this.entries();
+        entries.sort((a, b) => {
+            if (compare) {
+                return compare(a[1], b[1]);
+            }
+            return compared(a[1], b[1], descending);
+        });
+        return collect(entriesToObject(entries));
+    }
+
+    sortBy(key: string | ((item: any) => number) | [string, undefined | 'asc' | 'desc'][], descending: boolean = false) {
+        const entries = this.entries();
+        if(Array.isArray(key)) {
+            entries.sort((a, b) => {
+                for(let item of key) {
+                    const compareResult = compared(safeGet(a[1], item[0]), safeGet(b[1], item[0]), item[1] === 'desc');
+                    if(compareResult != 0) {
+                        return compareResult;
+                    }
+                }
+                return 0;
+            });
+        } else {
+            entries.sort((a, b) => {
+                return typeof key == 'string' ?
+                    compared(safeGet(a[1], key), safeGet(b[1], key), descending) :
+                    (descending ?
+                        key(b[1]) - key(a[1]) :
+                        key(a[1]) - key(b[1]));
+            });
         }
-        return valueOf(defaultValue);
+        return collect(entriesToObject(entries));
     }
 }

@@ -182,6 +182,18 @@ class Collection {
         });
         return initialValue;
     }
+    skip(count) {
+        return this.slice(count);
+    }
+    some(valueOrCallback) {
+        return this.contains(valueOrCallback);
+    }
+    sortByDesc(key) {
+        return this.sortBy(key, true);
+    }
+    sortDesc(compare) {
+        return this.sort(compare, true);
+    }
     sum(key) {
         if (key === undefined || typeof key === 'string') {
             return this.reduce((pv, cv) => pv + (0, helpers_1.toNumber)(key === undefined ? cv : cv[key]), 0);
@@ -190,8 +202,28 @@ class Collection {
             return this.values().map(key).reduce((pv, cv) => pv + cv, 0);
         }
     }
+    take(limit) {
+        if (limit < 0) {
+            return this.slice(this.length + limit);
+        }
+        return this.slice(0, limit);
+    }
+    value(key, defaultValue) {
+        const firstItem = this.first();
+        return (0, helpers_1.valueOf)(firstItem ? (0, helpers_1.collect)(firstItem).get(key) : (0, helpers_1.valueOf)(defaultValue));
+    }
     values() {
         return (0, helpers_1.collect)(this.entries().map((v) => v[1]));
+    }
+    when(condition, doThis, otherwiseDoThis) {
+        condition ? doThis(this) : (otherwiseDoThis ? otherwiseDoThis(this) : void (0));
+        return this;
+    }
+    whenEmpty(doThis, otherwiseDoThis) {
+        return this.when(this.length == 0, doThis, otherwiseDoThis);
+    }
+    whenNotEmpty(doThis, otherwiseDoThis) {
+        return this.when(this.length > 0, doThis, otherwiseDoThis);
     }
     where(key, operator, value) {
         return this.filter((0, helpers_1.callbackForFilter)(key, operator, value));

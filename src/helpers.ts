@@ -62,14 +62,50 @@ export const callbackForFilter = <T>(key: string | ((value: T, key: string) => b
  * @returns `Collection<T, T | any>
  */
 export const collect = <T>(item: T[] | T): Collection<T, T | any> => {
-    if (typeof (item as any)[Symbol.iterator] == 'function') {
-        return new ArrayCollection([...(item as Iterable<T>)]);
+    if(Array.isArray(item)) {
+        return new ArrayCollection(item);
     } else if (typeof item == 'object') {
         return new ObjectCollection(item as T);
+    } else if (typeof (item as any)[Symbol.iterator] == 'function') {
+        return new ArrayCollection([...(item as Iterable<T>)]);
     } else if (typeof item == 'function') {
         return collect(valueOf(item));
     }
     return new ArrayCollection([item]);
+};
+
+export const compared = <T>(a:T, b:T, reversed:boolean = false):number => {
+    const strA:string = (a as any).toString();
+    const strB:string = (b as any).toString();
+    const numberA = parseFloat(strA);
+    const numberB = parseFloat(strB);
+    if(!isNaN(numberA) && !isNaN(numberB)) {
+        return reversed ? numberB - numberA : numberA - numberB;
+    } else {
+        return reversed ? strB.localeCompare(strA) : strA.localeCompare(strB);
+    }
+};
+
+/**
+ * Creates an array from the entries array.
+ * @param entries Entries array to be converted into array.
+ * @returns `T[]`
+ */
+export const entriesToArray = <T>(entries:[string, T][]): T[] => {
+    return entries.map(e => e[1]);
+};
+
+/**
+ * Creates an object from the entries array.
+ * @param entries Entries object to be converted into object.
+ * @returns any
+ */
+export const entriesToObject = (entries:[string, any][]): any => {
+    const result:any = {};
+    for(let entry of entries) {
+        result[entry[0]] = entry[1];
+    }
+    return result;
 };
 
 /**

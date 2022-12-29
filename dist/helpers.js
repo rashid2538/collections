@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.valueOf = exports.toNumber = exports.safeGet = exports.range = exports.negate = exports.iterate = exports.equality = exports.collect = exports.callbackForFilter = void 0;
+exports.valueOf = exports.toNumber = exports.safeGet = exports.range = exports.negate = exports.iterate = exports.equality = exports.entriesToObject = exports.entriesToArray = exports.compared = exports.collect = exports.callbackForFilter = void 0;
 const array_collection_1 = require("./array_collection");
 const object_collection_1 = require("./object_collection");
 /**
@@ -62,11 +62,14 @@ exports.callbackForFilter = callbackForFilter;
  * @returns `Collection<T, T | any>
  */
 const collect = (item) => {
-    if (typeof item[Symbol.iterator] == 'function') {
-        return new array_collection_1.ArrayCollection([...item]);
+    if (Array.isArray(item)) {
+        return new array_collection_1.ArrayCollection(item);
     }
     else if (typeof item == 'object') {
         return new object_collection_1.ObjectCollection(item);
+    }
+    else if (typeof item[Symbol.iterator] == 'function') {
+        return new array_collection_1.ArrayCollection([...item]);
     }
     else if (typeof item == 'function') {
         return (0, exports.collect)((0, exports.valueOf)(item));
@@ -74,6 +77,41 @@ const collect = (item) => {
     return new array_collection_1.ArrayCollection([item]);
 };
 exports.collect = collect;
+const compared = (a, b, reversed = false) => {
+    const strA = a.toString();
+    const strB = b.toString();
+    const numberA = parseFloat(strA);
+    const numberB = parseFloat(strB);
+    if (!isNaN(numberA) && !isNaN(numberB)) {
+        return reversed ? numberB - numberA : numberA - numberB;
+    }
+    else {
+        return reversed ? strB.localeCompare(strA) : strA.localeCompare(strB);
+    }
+};
+exports.compared = compared;
+/**
+ * Creates an array from the entries array.
+ * @param entries Entries array to be converted into array.
+ * @returns `T[]`
+ */
+const entriesToArray = (entries) => {
+    return entries.map(e => e[1]);
+};
+exports.entriesToArray = entriesToArray;
+/**
+ * Creates an object from the entries array.
+ * @param entries Entries object to be converted into object.
+ * @returns any
+ */
+const entriesToObject = (entries) => {
+    const result = {};
+    for (let entry of entries) {
+        result[entry[0]] = entry[1];
+    }
+    return result;
+};
+exports.entriesToObject = entriesToObject;
 /**
  * Creates a callback for the equality check for a value.
  * @param value Value to be checked for equality.

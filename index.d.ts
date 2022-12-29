@@ -17,6 +17,20 @@ export function callbackForFilter<T>(key: string | ((value: T, key: string) => b
 export function collect<T>(item: T | T[]): Collection<T, T | any>;
 
 /**
+ * Creates an array from the entries array.
+ * @param entries Entries array to be converted into array.
+ * @returns `T[]`
+ */
+export function entriesToArray<T>(entries:[string, T][]): T[];
+
+/**
+ * Creates an object from the entries array.
+ * @param entries Entries object to be converted into object.
+ * @returns any
+ */
+export function entriesToObject(entries:[string, any][]): any;
+
+/**
  * Creates a callback for the equality check for a value.
  * @param value Value to be checked for equality.
  * @returns `(item: T) => boolean`

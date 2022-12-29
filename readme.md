@@ -1,4 +1,4 @@
-# Javascript port of Illuminate Collections
+# Javascript port of [Illuminate Collections](https://github.com/illuminate/collections)
 
 [![NPM version][npm-version-image]][npm-url] [![NPM downloads][npm-downloads-image]][npm-downloads-url] [![MIT License][license-image]][license-url]
 
